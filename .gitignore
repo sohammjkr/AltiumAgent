@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets / local config
+.env
+.env.local
+config.local.toml
+
+# Bridge runtime state (regenerated every session)
+.agent/
+*.log
+
+# Altium scratch
+History/
+__Previews/
+Project Logs for */
+Project Outputs for */
+*.PcbDoc.bak
+*.SchDoc.bak
+~$*
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

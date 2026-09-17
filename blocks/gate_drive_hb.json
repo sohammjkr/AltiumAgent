@@ -1,0 +1,121 @@
+{
+  "name": "gate_drive_hb",
+  "version": 1,
+  "title": "Half-bridge gate drive (bootstrap)",
+  "description": "EXAMPLE ONLY - not a verified design. Replace this with a block captured from your own schematic via block_capture. It exists so the format is readable and the tests have something to chew on.",
+  "parameters": {
+    "r_gate": {
+      "default": "10R",
+      "description": "Series gate resistor, both sides"
+    },
+    "c_boot": {
+      "default": "100n",
+      "description": "Bootstrap capacitor"
+    },
+    "c_dec": {
+      "default": "1u",
+      "description": "Driver VCC decoupling"
+    }
+  },
+  "interface": [
+    { "name": "VCC", "kind": "power_in" },
+    { "name": "GND", "kind": "power_in" },
+    { "name": "PWM_H", "kind": "input" },
+    { "name": "PWM_L", "kind": "input" },
+    { "name": "GATE_H", "kind": "output" },
+    { "name": "GATE_L", "kind": "output" },
+    { "name": "SW", "kind": "bidirectional" }
+  ],
+  "schematic": {
+    "components": [
+      {
+        "ref": "U_DRV",
+        "library": "Miscellaneous Devices.IntLib",
+        "design_item_id": "IR2110",
+        "designator_prefix": "U",
+        "dx_mm": 0.0,
+        "dy_mm": 0.0,
+        "rotation": 0,
+        "parameters": { "Comment": "Half-bridge driver" }
+      },
+      {
+        "ref": "R_G_H",
+        "library": "Miscellaneous Devices.IntLib",
+        "design_item_id": "Res3",
+        "designator_prefix": "R",
+        "dx_mm": 30.0,
+        "dy_mm": 10.0,
+        "rotation": 0,
+        "parameters": { "Value": "{r_gate}" }
+      },
+      {
+        "ref": "R_G_L",
+        "library": "Miscellaneous Devices.IntLib",
+        "design_item_id": "Res3",
+        "designator_prefix": "R",
+        "dx_mm": 30.0,
+        "dy_mm": -10.0,
+        "rotation": 0,
+        "parameters": { "Value": "{r_gate}" }
+      },
+      {
+        "ref": "C_BOOT",
+        "library": "Miscellaneous Devices.IntLib",
+        "design_item_id": "Cap",
+        "designator_prefix": "C",
+        "dx_mm": 10.0,
+        "dy_mm": 22.0,
+        "rotation": 90,
+        "parameters": { "Value": "{c_boot}", "Voltage": "50V" }
+      },
+      {
+        "ref": "C_DEC",
+        "library": "Miscellaneous Devices.IntLib",
+        "design_item_id": "Cap",
+        "designator_prefix": "C",
+        "dx_mm": -14.0,
+        "dy_mm": 8.0,
+        "rotation": 90,
+        "parameters": { "Value": "{c_dec}", "Voltage": "25V" }
+      },
+      {
+        "ref": "D_BOOT",
+        "library": "Miscellaneous Devices.IntLib",
+        "design_item_id": "Diode",
+        "designator_prefix": "D",
+        "dx_mm": -2.0,
+        "dy_mm": 22.0,
+        "rotation": 0,
+        "parameters": { "Value": "Fast recovery" }
+      }
+    ],
+    "nets": [
+      { "name": "VB",     "scope": "internal",  "pins": ["U_DRV.6", "C_BOOT.1", "D_BOOT.2"] },
+      { "name": "HO",     "scope": "internal",  "pins": ["U_DRV.7", "R_G_H.1"] },
+      { "name": "LO",     "scope": "internal",  "pins": ["U_DRV.1", "R_G_L.1"] },
+      { "name": "VCC",    "scope": "interface", "pins": ["U_DRV.3", "C_DEC.1", "D_BOOT.1"] },
+      { "name": "GND",    "scope": "interface", "pins": ["U_DRV.2", "C_DEC.2"] },
+      { "name": "PWM_H",  "scope": "interface", "pins": ["U_DRV.10"] },
+      { "name": "PWM_L",  "scope": "interface", "pins": ["U_DRV.12"] },
+      { "name": "GATE_H", "scope": "interface", "pins": ["R_G_H.2"] },
+      { "name": "GATE_L", "scope": "interface", "pins": ["R_G_L.2"] },
+      { "name": "SW",     "scope": "interface", "pins": ["U_DRV.5", "C_BOOT.2"] }
+    ],
+    "wires": [
+      { "points_mm": [[20.0, 10.0], [30.0, 10.0]] },
+      { "points_mm": [[20.0, -10.0], [30.0, -10.0]] },
+      { "points_mm": [[10.0, 22.0], [20.0, 22.0], [20.0, 12.0]] }
+    ]
+  },
+  "placement": {
+    "anchor": "U_DRV",
+    "components": [
+      { "ref": "U_DRV",  "dx_mm": 0.0,   "dy_mm": 0.0,   "rotation": 0,   "side": "top" },
+      { "ref": "C_DEC",  "dx_mm": -3.4,  "dy_mm": 1.2,   "rotation": 90,  "side": "top" },
+      { "ref": "C_BOOT", "dx_mm": 2.1,   "dy_mm": 3.8,   "rotation": 90,  "side": "top" },
+      { "ref": "D_BOOT", "dx_mm": -1.0,  "dy_mm": 3.8,   "rotation": 180, "side": "top" },
+      { "ref": "R_G_H",  "dx_mm": 4.2,   "dy_mm": 1.8,   "rotation": 90,  "side": "top" },
+      { "ref": "R_G_L",  "dx_mm": 4.2,   "dy_mm": -1.8,  "rotation": 90,  "side": "top" }
+    ]
+  }
+}
