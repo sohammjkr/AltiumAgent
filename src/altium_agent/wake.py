@@ -1,12 +1,25 @@
 """Headless wake: ask an already-running Altium to drain the queue once.
 
-Altium is single-instance, so launching X2.EXE with a -R process argument is
-expected to dispatch into the running process rather than starting a second
-one. That behaviour is NOT verified on the Develop build on this machine -
-see docs/altium-api.md. Everything here degrades to a clear error rather than
-hanging if it turns out not to work.
+VERIFIED BEHAVIOUR (Altium Designer Develop build, 2026-09-17)
+-------------------------------------------------------------
+Launching X2.EXE with a -R process argument while Altium is already running
+DOES dispatch into the running instance. It does not start a second one - the
+new process blocks on the startup mutex and exits.
 
-The interactive path (agent panel open in Altium) never needs this.
+Two things were learned the hard way and are encoded below:
+
+1. **The procedure name must be document-qualified** ("Probe.pas>Probe_Main",
+   not "Probe_Main"). An unqualified name makes Altium pop its "Select Item To
+   Run" dialog and sit there waiting for a human, which looks exactly like a
+   hang from the outside.
+
+2. **Never wait on the launcher process.** The original implementation used
+   subprocess.run(timeout=30), and subprocess.run KILLS the child on timeout -
+   so the 30s limit was killing the hand-off it was supposed to be waiting
+   for. The launcher is fire-and-forget; the meaningful signal is the result
+   file appearing, which bridge.py already waits on.
+
+The interactive path (agent panel open in Altium) never needs any of this.
 """
 
 from __future__ import annotations
@@ -19,19 +32,35 @@ log = logging.getLogger(__name__)
 
 SCRIPT_PROJECT = Path("altium") / "AltiumAgent.PrjScr"
 
+# Which script document each entry point lives in. Altium needs the qualified
+# "Document>Procedure" form or it prompts the user to choose.
+PROCEDURE_DOCUMENTS = {
+    "DrainOnce": "Bridge.pas",
+    "Probe_Main": "Probe.pas",
+    "RunAgentPanel": "AgentPanel.pas",
+}
+
+
+def qualify(procedure: str) -> str:
+    """Return the Document>Procedure form Altium needs to run without prompting."""
+    if ">" in procedure:
+        return procedure
+    document = PROCEDURE_DOCUMENTS.get(procedure)
+    return f"{document}>{procedure}" if document else procedure
+
 
 def build_command(altium_exe: Path, script_project: Path, procedure: str) -> list[str]:
     """Build the RunScript dispatch argv.
 
     Altium's process syntax is:
-        -RScriptingSystem:RunScript(ProjectName="<abs>"|ProcedureName="<proc>")
+        -RScriptingSystem:RunScript(ProjectName="<abs>"|ProcedureName="<doc>><proc>")
     The pipe separates parameters and must survive shell quoting, which is why
     this is passed as a single argv element with shell=False.
     """
     arg = (
         "-RScriptingSystem:RunScript("
         f'ProjectName="{script_project.resolve()}"|'
-        f'ProcedureName="{procedure}")'
+        f'ProcedureName="{qualify(procedure)}")'
     )
     return [str(altium_exe), arg]
 

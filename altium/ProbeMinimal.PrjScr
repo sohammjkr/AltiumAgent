@@ -1,0 +1,9 @@
+[Design]
+Version=1.0
+HierarchyMode=0
+
+[Document1]
+DocumentPath=src\ProbeMinimal.pas
+AnnotationEnabled=1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1

@@ -9,20 +9,53 @@ venv/
 
 # Secrets / local config
 .env
-.env.local
+.env*
+!.env.example
 config.local.toml
+secrets.*
+credentials.json
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+.netrc
+.npmrc
 
 # Bridge runtime state (regenerated every session)
 .agent/
 *.log
+
+# Altium design files.
+#
+# This repo is a TOOL, not a board. It should never contain real design data -
+# this project sits near a working Altium environment, so one careless
+# `git add -A` is all it takes to publish a customer's board to a public repo.
+# The agent's own DelphiScript (*.PrjScr, *.pas, *.dfm) is deliberately NOT
+# ignored; actual design documents are.
+*.PcbDoc
+*.SchDoc
+*.PrjPcb
+*.PrjPcbStructure
+*.SchLib
+*.PcbLib
+*.IntLib
+*.DbLib
+*.OutJob
+*.BomDoc
+*.Harness
+*.PCBDwf
+*.pdnaK
+*.Drc
+*.Net
+*.Nsx
 
 # Altium scratch
 History/
 __Previews/
 Project Logs for */
 Project Outputs for */
-*.PcbDoc.bak
-*.SchDoc.bak
+*.bak
 ~$*
 
 # OS

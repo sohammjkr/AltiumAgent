@@ -170,6 +170,22 @@ end;
 
 { ---------------------------------------------------------------- timer }
 
+{ Stop polling. Called as soon as the reply is final. After this, no script
+  code runs until the next turn.
+
+  Declared BEFORE BR_Tick deliberately: BR_Tick's watchdog calls it, and
+  DelphiScript has no usable `forward` declaration, so a callee must appear
+  above its caller. }
+procedure BR_EndTurn;
+begin
+  if BR_Timer <> Nil then BR_Timer.Enabled := False;
+  BR_Started := False;
+  TP_WriteState(BR_Turn, False);
+  TP_Log('turn ' + BR_Turn + ' end - polling stopped');
+  BR_Turn := '';
+end;
+
+
 procedure BR_Tick(Sender : TObject);
 var
   Executed : Integer;
@@ -243,18 +259,6 @@ begin
   BR_Timer.Enabled  := True;
   TP_WriteState(TurnId, True);
   TP_Log('turn ' + TurnId + ' begin - polling started');
-end;
-
-
-{ Stop polling. Called as soon as the reply is final. After this, no script
-  code runs until the next turn. }
-procedure BR_EndTurn;
-begin
-  if BR_Timer <> Nil then BR_Timer.Enabled := False;
-  BR_Started := False;
-  TP_WriteState(BR_Turn, False);
-  TP_Log('turn ' + BR_Turn + ' end - polling stopped');
-  BR_Turn := '';
 end;
 
 

@@ -23,7 +23,6 @@ const
 
 var
   ProbeResults : TStringList;
-  ProbeTimerFired : Boolean;
 
 
 procedure ProbeAdd(const Name : string; Ok : Boolean; const Detail : string);
@@ -67,44 +66,34 @@ begin
 end;
 
 
-procedure ProbeTimerTick(Sender : TObject);
-begin
-  ProbeTimerFired := True;
-end;
+{ Timer check - creation and configuration only.
 
+  The earlier version of this assigned a standalone procedure to Timer.OnTimer
+  and pumped the message loop with Application.ProcessMessages + Sleep to see
+  whether it fired. Three problems: DelphiScript may reject assigning a plain
+  procedure to a method-pointer event, Sleep is not guaranteed to exist, and
+  pumping messages from a non-form script is not something this build promises
+  to support. Any one of those is a compile or runtime failure that takes the
+  whole probe down.
 
+  Whether the timer actually FIRES is answered properly by opening the agent
+  panel, which is a real form with a real message loop - that is the context
+  the bridge runs in anyway. }
 procedure ProbeTimer;
 var
   Timer : TTimer;
-  Waited : Integer;
 begin
-  ProbeTimerFired := False;
   try
     Timer := TTimer.Create(Nil);
     try
-      Timer.Interval := 50;
-      Timer.OnTimer  := ProbeTimerTick;
-      Timer.Enabled  := True;
-
-      { Pump the message loop so the timer can actually fire. }
-      Waited := 0;
-      while (not ProbeTimerFired) and (Waited < 2000) do
-      begin
-        Application.ProcessMessages;
-        Sleep(10);
-        Waited := Waited + 10;
-      end;
-
-      Timer.Enabled := False;
-      if ProbeTimerFired then
-        ProbeAdd('timer', True, 'TTimer fired within ' + IntToStr(Waited) + 'ms')
-      else
-        ProbeAdd('timer', False, 'TTimer did not fire in 2s');
+      Timer.Interval := 100;
+      Timer.Enabled  := False;
+      ProbeAdd('timer_create', True, 'TTimer created and configured');
     finally
       Timer.Free;
     end;
   except
-    ProbeAdd('timer', False, 'TTimer could not be created');
+    ProbeAdd('timer_create', False, 'TTimer could not be created');
   end;
 end;
 
@@ -286,10 +275,10 @@ begin
       Line := ProbeResults[I];
       P1 := Pos('|', Line);
       Name := Copy(Line, 1, P1 - 1);
-      Detail := Copy(Line, P1 + 1, MaxInt);
+      Detail := Copy(Line, P1 + 1, Length(Line));
       P2 := Pos('|', Detail);
       OkFlag := Copy(Detail, 1, P2 - 1);
-      Detail := Copy(Detail, P2 + 1, MaxInt);
+      Detail := Copy(Detail, P2 + 1, Length(Detail));
 
       if I < ProbeResults.Count - 1 then Comma := ',' else Comma := '';
       if OkFlag = '1' then
@@ -323,7 +312,7 @@ begin
   begin
     Line := ProbeResults[I];
     P1 := Pos('|', Line);
-    P2 := Pos('|', Copy(Line, P1 + 1, MaxInt)) + P1;
+    P2 := Pos('|', Copy(Line, P1 + 1, Length(Line))) + P1;
     if Copy(Line, P1 + 1, P2 - P1 - 1) = '1' then
     begin
       Inc(Passed);

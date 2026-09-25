@@ -91,8 +91,8 @@ gate drive is worse than no gate drive.
   "text": "Add a bootstrap cap across the high-side driver supply",
   "created": "2026-09-17T10:30:58.102Z",
   "context": {
-    "focused_doc": "SH1_SERIES_CAPACITORS.SchDoc",
-    "project": "DC_BLK_WASHER.PrjPcb",
+    "focused_doc": "SH1_POWER.SchDoc",
+    "project": "ExampleBoard.PrjPcb",
     "selection": ["U3", "C11"]
   }
 }
@@ -131,7 +131,7 @@ reads it to know whether Altium is actually alive.
   "turn": "t000017",
   "polling": true,
   "last_tick": "2026-09-17T10:31:02.441Z",
-  "open_docs": ["DC_BLK_WASHER.PrjPcb", "SH1_SERIES_CAPACITORS.SchDoc"]
+  "open_docs": ["ExampleBoard.PrjPcb", "SH1_POWER.SchDoc"]
 }
 ```
 
